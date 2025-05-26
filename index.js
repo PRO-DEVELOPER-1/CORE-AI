@@ -10,7 +10,7 @@ import {
     getContentType
 } from '@whiskeysockets/baileys';
 import { Handler, Callupdate, GroupUpdate } from './data/index.js';
-import updateHandler from '../plugins/update.js';
+import updateHandler from '../plugins/update.js'  // Adjust if file is named differently
 import express from 'express';
 import pino from 'pino';
 import fs from 'fs';
@@ -50,60 +50,6 @@ const credsPath = path.join(sessionDir, 'creds.json');
 if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
 }
-
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Middleware for JSON parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Session deployment endpoint
-app.post('/deploy', async (req, res) => {
-    const { sessionId } = req.body;
-    
-    if (!sessionId || !sessionId.startsWith("CLOUD-AI~") || !sessionId.includes("#")) {
-        return res.status(400).json({ 
-            success: false, 
-            message: "Invalid session ID format. Must be: CLOUD-AI~FILEID#DECRYPTKEY" 
-        });
-    }
-    
-    try {
-        // Save the session ID to config
-        config.SESSION_ID = sessionId;
-        
-        // Attempt to download the session
-        const success = await downloadSessionData();
-        
-        if (success) {
-            res.json({ 
-                success: true,
-                message: "Session deployed successfully! Bot will restart with new session." 
-            });
-            // Restart the bot with new session
-            setTimeout(() => {
-                process.exit(0);
-            }, 2000);
-        } else {
-            res.status(500).json({
-                success: false,
-                message: "Failed to download session data. Check your ID and try again."
-            });
-        }
-    } catch (error) {
-        console.error('Deployment error:', error);
-        res.status(500).json({
-            success: false,
-            message: "Internal server error during deployment"
-        });
-    }
-});
-
-// Serve the cyberpunk interface
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
 
 async function downloadSessionData() {
     console.log("Debugging SESSION_ID:", config.SESSION_ID);
@@ -269,11 +215,12 @@ async function init() {
     }
 }
 
-// Start the server and bot
+init();
+
+app.get('index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.listen(PORT, () => {
-    console.log(`\n${chalk.green.bold('⚡ Cyberpunk Deployment Portal running on port')} ${chalk.yellow.bold(PORT)}`);
-    console.log(`${chalk.blue.bold('🌐 Access the interface at:')} ${chalk.cyan.bold(`http://localhost:${PORT}`)}\n`);
-    
-    // Start the WhatsApp bot
-    init();
+    console.log(`Server is running on port ${PORT}`);
 });
