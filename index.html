@@ -1,137 +1,359 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLOUD-AI</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>CLOUD-AI // SESSION DEPLOYMENT</title>
     <style>
+        :root {
+            --neon-pink: #ff2a6d;
+            --neon-blue: #05d9e8;
+            --neon-purple: #d300c5;
+            --neon-orange: #FFA500;
+            --neon-lime: #32CD32;
+            --dark-bg: #0d0221;
+            --darker-bg: #05010d;
+            --text-glow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+            --pink-glow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+        }
+        
         body {
-            background-color: #121212;
-            color: #ffffff;
+            background-color: var(--dark-bg);
+            color: var(--neon-blue);
             font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, var(--neon-purple) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, var(--neon-pink) 0%, transparent 25%),
+                linear-gradient(to bottom, var(--darker-bg), var(--dark-bg));
+            overflow: hidden;
         }
-        .navbar, .footer {
-            background-color: #1c1c1c;
-            font-family: monospace;
-            padding: 15px;
-            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        
+        .terminal {
+            width: 700px;
+            background-color: rgba(13, 2, 33, 0.8);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 10px var(--neon-blue);
+            border-radius: 5px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
         }
-        .navbar-brand {
-            font-size: 28px;
-            font-weight: bold;
+        
+        .terminal::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid var(--neon-pink);
+            border-radius: 8px;
+            animation: pulse 4s infinite alternate;
+            z-index: -1;
         }
-        .card {
-            background-color: #1e1e1e;
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.7; }
+        }
+        
+        h1 {
+            color: var(--neon-pink);
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: var(--text-glow);
+            letter-spacing: 3px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--neon-blue);
+            font-size: 1.1em;
+            text-shadow: var(--text-glow);
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(5, 217, 232, 0.1);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-size: 1.1em;
+            border-radius: 3px;
+            box-shadow: inset 0 0 10px rgba(5, 217, 232, 0.3);
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 10px rgba(255, 42, 109, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+            color: white;
             border: none;
-            border-radius: 20px;
-            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-        }
-        .card-header {
-            background-color: #282828;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 3px;
+            width: 100%;
             font-weight: bold;
-            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px var(--neon-pink);
+            margin-top: 10px;
         }
-        .card-body {
-            text-align: center;
+        
+        button:hover {
+            box-shadow: 0 0 25px var(--neon-pink), 0 0 35px var(--neon-purple);
+            transform: translateY(-2px);
         }
-        .modal-content {
-            border-radius: 15px;
-            text-align: center;
+        
+        button:active {
+            transform: translateY(0);
         }
-        .footer {
-            text-align: center;
-            padding: 10px;
+        
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .glitch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-blue), var(--neon-purple));
+            animation: glitch-anim 5s infinite;
+        }
+        
+        @keyframes glitch-anim {
+            0% { width: 0; left: 0; }
+            25% { width: 100%; left: 0; }
+            50% { width: 0; left: 100%; }
+            75% { width: 100%; left: 0; }
+            100% { width: 0; left: 0; }
+        }
+        
+        .status {
             margin-top: 20px;
+            padding: 10px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 3px;
+            min-height: 50px;
+            font-family: monospace;
+            color: var(--neon-pink);
+            display: none;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(5, 217, 232, 0.1);
+            border-left: 3px solid var(--neon-orange);
+            color: var(--neon-lime);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        .instructions strong {
+            color: var(--neon-orange);
+        }
+        
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--neon-blue);
+            border-style: solid;
+            border-width: 0;
+        }
+        
+        .corner-tl {
+            top: 0;
+            left: 0;
+            border-top-width: 2px;
+            border-left-width: 2px;
+        }
+        
+        .corner-tr {
+            top: 0;
+            right: 0;
+            border-top-width: 2px;
+            border-right-width: 2px;
+        }
+        
+        .corner-bl {
+            bottom: 0;
+            left: 0;
+            border-bottom-width: 2px;
+            border-left-width: 2px;
+        }
+        
+        .corner-br {
+            bottom: 0;
+            right: 0;
+            border-bottom-width: 2px;
+            border-right-width: 2px;
+        }
+        
+        .matrix-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="#">CLOUD-AI</a>
-    </nav>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <div class="card">
-                    <div class="card-header">Bot Owner</div>
-                    <div class="card-body">
-                        <p>Name: <strong>BRUCE BERA</strong></p>
-                        <p>Contact: <a href="https://t.me/BERA_TECH" target="_blank">Telegram</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 mb-4">
-                <div class="card">
-                    <div class="card-header">Bot Source Code</div>
-                    <div class="card-body">
-                        <p>GitHub: <a href="https://github.com/DEVELOPER-BERA/CLOUD-AI" target="_blank">CLOUD-AI Repository</a></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-12 mb-4">
-                <div class="card">
-                    <div class="card-header">System Info</div>
-                    <div class="card-body">
-                        <p><strong>Bot Name:</strong> CLOUD-AI</p>
-                        <p><strong>Developer:</strong> BRUCE BERA</p>
-                        <p><strong>Runtime:</strong> <span id="uptime">Loading...</span></p>
-                    </div>
-                </div>
-            </div>
+    <div class="matrix-rain" id="matrixRain"></div>
+    <div class="terminal">
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+        <div class="glitch"></div>
+        
+        <h1>CLOUD-AI // SESSION DEPLOY</h1>
+        
+        <div class="input-group">
+            <label for="sessionId">ENTER SESSION ID</label>
+            <input type="text" id="sessionId" placeholder="CLOUD-AI~FILEID#DECRYPTKEY" required>
         </div>
-    </div><div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background-color: #1e1e1e; color: #ffffff;">
-            <div class="modal-header">
-                <h5 class="modal-title" id="aboutModalLabel">About CLOUD AI</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true" style="color: #ffffff;">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>CLOUD AI is a versatile and powerful WhatsApp bot designed to provide various functionalities and services.</p>
-                <p>Developed by <strong>Bruce Bera</strong>, the bot offers seamless integration with Telegram and other platforms.</p>
-                <p>Contact the developer via <a href="https://t.me/bera_tech" target="_blank">Telegram</a>.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
+        
+        <button id="deployBtn">DEPLOY SESSION</button>
+        
+        <div class="instructions">
+            <strong>INSTRUCTIONS:</strong><br>
+            1. Format: <strong>CLOUD-AI~FILEID#DECRYPTKEY</strong><br>
+            2. Get your session from Mega.nz<br>
+            3. Must include both file ID and decryption key<br>
+            4. Invalid format will trigger QR authentication
         </div>
+        
+        <div class="status" id="statusBox"></div>
+        
+        <div class="scanlines"></div>
     </div>
-</div>
 
-<footer class="footer">
-    <p>&copy; 2025 CLOUD AI | Developed by <strong>Bruce Bera</strong></p>
-</footer>
+    <script>
+        document.getElementById('deployBtn').addEventListener('click', async () => {
+            const sessionId = document.getElementById('sessionId').value.trim();
+            const statusBox = document.getElementById('statusBox');
+            
+            if (!sessionId) {
+                statusBox.textContent = "❌ ERROR: Session ID cannot be empty!";
+                statusBox.style.display = "block";
+                statusBox.style.color = "var(--neon-pink)";
+                return;
+            }
+            
+            // Validate the format
+            if (!sessionId.startsWith("CLOUD-AI~") || !sessionId.includes("#")) {
+                statusBox.textContent = "⚠️ WARNING: Invalid format! QR code will be used instead.";
+                statusBox.style.display = "block";
+                statusBox.style.color = "var(--neon-orange)";
+                return;
+            }
+            
+            statusBox.textContent = "⌛ DEPLOYING SESSION...";
+            statusBox.style.display = "block";
+            statusBox.style.color = "var(--neon-blue)";
+            
+            try {
+                const response = await fetch('/deploy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusBox.textContent = "✅ SESSION DEPLOYED SUCCESSFULLY!";
+                    statusBox.style.color = "var(--neon-lime)";
+                } else {
+                    statusBox.textContent = `❌ ERROR: ${data.message || "Failed to deploy session"}`;
+                    statusBox.style.color = "var(--neon-pink)";
+                }
+            } catch (error) {
+                statusBox.textContent = "❌ NETWORK ERROR: Failed to connect to server";
+                statusBox.style.color = "var(--neon-pink)";
+                console.error("Deployment error:", error);
+            }
+        });
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let startTime = Date.now();
-
-        function formatUptime(uptime) {
-            const seconds = Math.floor(uptime / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const remainingSeconds = seconds % 60;
-            const remainingMinutes = minutes % 60;
-            return `${hours} hrs, ${remainingMinutes} min, ${remainingSeconds} sec`;
+        // Matrix rain effect
+        const matrixRain = document.getElementById('matrixRain');
+        const canvas = document.createElement('canvas');
+        matrixRain.appendChild(canvas);
+        
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const cols = Math.floor(w / 20) + 1;
+        const ypos = Array(cols).fill(0);
+        
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, h);
+        
+        function matrix() {
+            ctx.fillStyle = '#0001';
+            ctx.fillRect(0, 0, w, h);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = '15pt monospace';
+            
+            ypos.forEach((y, ind) => {
+                const text = String.fromCharCode(Math.random() * 128);
+                const x = ind * 20;
+                ctx.fillText(text, x, y);
+                
+                if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
+                else ypos[ind] = y + 20;
+            });
         }
-
-        function fetchUptime() {
-            const now = Date.now();
-            const uptime = now - startTime;
-            document.getElementById('uptime').innerText = formatUptime(uptime);
-        }
-
-        fetchUptime();
-        setInterval(fetchUptime, 1000);
-    });
-</script>
-
+        
+        setInterval(matrix, 50);
+    </script>
 </body>
 </html>
