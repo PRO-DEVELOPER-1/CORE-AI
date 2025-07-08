@@ -22,6 +22,7 @@ import moment from 'moment-timezone';
 import axios from 'axios';
 import config from './config.cjs';
 import pkg from './lib/autoreact.cjs';
+import { EventEmitter } from 'events'; // Import EventEmitter properly
 
 const { emojis, doReact } = pkg;
 const prefix = process.env.PREFIX || config.PREFIX;
@@ -109,8 +110,8 @@ async function start() {
             }
         });
 
-        // Increase max listeners globally
-        require('events').EventEmitter.defaultMaxListeners = 20;
+        // FIX: Proper way to increase max listeners in ES modules
+        EventEmitter.defaultMaxListeners = 20;
 
         Matrix.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect } = update;
