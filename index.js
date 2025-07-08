@@ -10,7 +10,7 @@ import {
     getContentType
 } from '@whiskeysockets/baileys';
 import { Handler, Callupdate, GroupUpdate } from './data/index.js';
-import updateHandler from '../plugins/update.js'
+import updateHandler from '../plugins/update.js';
 import express from 'express';
 import pino from 'pino';
 import fs from 'fs';
@@ -109,8 +109,8 @@ async function start() {
             }
         });
 
-        // FIX: Increase max listeners to prevent warnings
-        Matrix.ev.setMaxListeners(20);
+        // Increase max listeners globally
+        require('events').EventEmitter.defaultMaxListeners = 20;
 
         Matrix.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect } = update;
@@ -149,30 +149,36 @@ async function start() {
             Matrix.public = false;
         }
 
-        // FIX: Combined all messages.upsert handlers into one
+        // Combined message handler
         Matrix.ev.on("messages.upsert", async (chatUpdate) => {
-            // Original handler
-            await Handler(chatUpdate, Matrix, logger);
-            
-            // Auto reaction handler
-            const mek = chatUpdate.messages[0];
-            if (!mek.key.fromMe && config.AUTO_REACT && mek.message) {
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                await doReact(randomEmoji, mek, Matrix);
-            }
-            
-            // Auto status reaction handler
-            if (mek?.message && mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
-                const jawadlike = await Matrix.decodeJid(Matrix.user.id);
-                const emojiList = ['🦖', '💸', '💨', '🦮', '🐕‍🦺', '💯', '🔥', '💫', '💎', '⚡', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '💻', '🤖', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🔔', '👌', '💥', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '💚'];
-                const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-                await Matrix.sendMessage(mek.key.remoteJid, {
-                    react: {
-                        text: randomEmoji,
-                        key: mek.key,
-                    }
-                }, { statusJidList: [mek.key.participant, jawadlike] });
-                console.log(`Auto-reacted to a status with: ${randomEmoji}`);
+            try {
+                // Original handler
+                await Handler(chatUpdate, Matrix, logger);
+                
+                const mek = chatUpdate.messages[0];
+                if (!mek) return;
+                
+                // Auto reaction
+                if (!mek.key.fromMe && config.AUTO_REACT && mek.message) {
+                    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    await doReact(randomEmoji, mek, Matrix);
+                }
+                
+                // Status reaction
+                if (mek.key.remoteJid === 'status@broadcast' && config.AUTO_STATUS_REACT === "true") {
+                    const jawadlike = await Matrix.decodeJid(Matrix.user.id);
+                    const emojiList = ['🦖', '💸', '💨', '🦮', '🐕‍🦺', '💯', '🔥', '💫', '💎', '⚡', '🤍', '🖤', '👀', '🙌', '🙆', '🚩', '💻', '🤖', '😎', '🤎', '✅', '🫀', '🧡', '😁', '😄', '🔔', '👌', '💥', '⛅', '🌟', '🗿', '🇵🇰', '💜', '💙', '🌝', '💚'];
+                    const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+                    await Matrix.sendMessage(mek.key.remoteJid, {
+                        react: {
+                            text: randomEmoji,
+                            key: mek.key,
+                        }
+                    }, { statusJidList: [mek.key.participant, jawadlike] });
+                    console.log(`Auto-reacted to a status with: ${randomEmoji}`);
+                }
+            } catch (err) {
+                console.error("Error in message handler:", err);
             }
         });
 
